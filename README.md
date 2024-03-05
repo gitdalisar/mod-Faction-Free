@@ -2,7 +2,7 @@
 Name:   FactionFree \
 Author:   Dalisar \
 Repository:   https://github.com/gitdalisar/factionfree \
-Download:   link to download the sources as .zip (take it from GitHub). \
+Download:   https://github.com/gitdalisar/factionfree/archive/refs/heads/main.zip \
 License:   Free to use for all, please have fun! 
 
 
@@ -20,4 +20,8 @@ This is not a module, but rather a replacement to 3 server side DBC files, modif
 4. Add the Patch-F.MPQ
    - **NOTE**: If you already have a Patch-F.MPQ file in use, simply change the "F" to an unused letter
 5. Log into your Database and run the attached .SQL file
-   
+   - Make sure that once you log in you are on the acore_world database by running _use acore_world;_
+ 
+## Contact Info
+Feel free to use this as much as you would like for your own projects. If you would like to ask any questions, you can find me on the AzerothCore Discord @Dalisar/
+Happy Hunting and Safe Travels!  
