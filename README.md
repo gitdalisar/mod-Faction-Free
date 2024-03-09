@@ -24,4 +24,4 @@ This is not a module that you need to place within that directory, but rather a 
    - Make sure that once you log in you are on the acore_world database by running _use acore_world;_ 
  
 ## Contact Info
-If you would like to ask any questions, you can find me on the AzerothCore Discord as @Dalisar so feel free to DM me there!/
+If you would like to ask any questions, you can find me on the AzerothCore Discord as @Dalisar so feel free to DM me there!
