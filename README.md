@@ -14,8 +14,9 @@ Please note though that these changes are **strictly** to the "Player-to-NPC" re
 ## How it works
 This is not a module that you need to place within that directory, but rather a replacement to 3 server side DBC files, modification of the acore_world database with 2 SQL commands, and the inclusion of a custom .MPQ file to ensure the DBC changes are represented correctly in your client. You will need to do the following:
 
-1. Download all relevant files
-2. Replace the existing Achievement.dbc, Faction.dbc, and Faction_Template.dbc in your build data directory with the 3 included here
+1. Make the appropriate backups
+2. Download all relevant files
+3. Replace the existing Achievement.dbc, Faction.dbc, and Faction_Template.dbc in your build data directory with the 3 included here
    - **NOTE**: If you have made modifications to these DBC files, such as your own custom factions or achievements, you will need to add thoes back in
 4. Add the Patch-F.MPQ to your client data directory
    - **NOTE**: If you already have a Patch-F.MPQ file in use, simply change the "F" to an unused letter. I chose F as all of these changes are tied to Faction.
