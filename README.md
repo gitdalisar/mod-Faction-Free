@@ -3,7 +3,7 @@ Name:   mod-Faction-Free \
 Author:   gitdalisar \
 Repository:   https://github.com/gitdalisar/mod-Faction-Free \
 Download:   https://github.com/gitdalisar/mod-Faction-Free/archive/refs/heads/main.zip \
-License:   Free to use for all, please have fun! 
+License:   GNU Affero General Public License v3.0
 
 
 ## Purpose
@@ -25,4 +25,3 @@ This is not a module that you need to place within that directory, but rather a 
  
 ## Contact Info
 If you would like to ask any questions, you can find me on the AzerothCore Discord as @Dalisar so feel free to DM me there!/
-Happy Hunting and Safe Travels!  
