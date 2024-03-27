@@ -12,16 +12,33 @@ The goal of these changes are to allow for players of either faction to be able 
 Please note though that these changes are **strictly** to the "Player-to-NPC" relationship. For the ability to have cross-faction groups, trade, guilds, etc. you will simply need to modify the worldserver.conf settings within your build path.
 
 ## How it works
-This is not a module that you need to place within that directory, but rather a replacement to 3 server side DBC files, modification of the acore_world database with 2 SQL commands, and the inclusion of a custom .MPQ file to ensure the DBC changes are represented correctly in your client. You will need to do the following:
+This is not a module that you need to place within that directory, but rather a replacement to server side DBC files, modification of the acore_world database, use of LUA scripts, and the inclusion of a custom .MPQ file to ensure the DBC changes are represented correctly in your client. You will need to do the following:
 
-1. Make the appropriate backups
-2. Download all relevant files
-3. Replace the existing Achievement.dbc, Faction.dbc, and Faction_Template.dbc in your build data directory with the 3 included here
+1. Ensure that your server supports LUA scripts by confirming the existance of the /build/bin/lua_scripts directory
+   - If this is not present, please install mod-Eluna from this location: https://github.com/azerothcore/mod-eluna
+2. Make the appropriate backups
+3. Download all relevant files
+4. Replace the existing Achievement.dbc, Faction.dbc, and Faction_Template.dbc in your build data directory with the 3 included here
    - **NOTE**: If you have made modifications to these DBC files, such as your own custom factions or achievements, you will need to add thoes back in
-4. Add the Patch-F.MPQ to your client data directory
+5. Add the Patch-F.MPQ to your client data directory
    - **NOTE**: If you already have a Patch-F.MPQ file in use, simply change the "F" to an unused letter. I chose F as all of these changes are tied to Faction.
-5. Log into MySQL and run the attached .SQL file against the acore_world database
-   - Make sure that once you log in you are on the acore_world database by running _use acore_world;_ 
- 
+6. Log into MySQL and run the attached .SQL files against the acore_world database
+   - First, run the EntryChecker.sql file to determine if any of the id, entry, or guid are currently in use
+   - If things are found, please modify the FactionFree.sql to use values that are not in use
+   - After ensuring no values are already in use, or after changing to ones that are free, run the FactionFree.sql against acore_world 
+
 ## Contact Info
 If you would like to ask any questions, you can find me on the AzerothCore Discord as @Dalisar so feel free to DM me there!
+
+## Special Thanks!
+Special thanks to the AC and WOW Modding communities for their support. Also, special shout out to those assisting in testing and code review:
+@Finntastic, @GitVenyce, and @Aldori15
+
+## Change Log
+v1.0.0: March 4, 2024
+- Initial Release
+v1.1.0: March 24, 2024
+- Teleport Network now included (Capital Cities and Instances) with NPCs, GObjects, and LUA scrpits
+- Players now know all player languages at character creation
+- Inns are now factionless and will give rested XP to any player regardless to faction
+- Players can now understand NPC/Creatures when they speak a Player-native language to ensure cross-faction language support
