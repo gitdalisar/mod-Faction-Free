@@ -27,6 +27,17 @@ This is not a module that you need to place within that directory, but rather a 
    - If things are found, please modify the FactionFree.sql to use values that are not in use
    - After ensuring no values are already in use, or after changing to ones that are free, run the FactionFree.sql against acore_world 
 
+The list of entry, ID, and GUID values used in this module can be seen below:
+|Location (table)|Column (attribute)|Values Used|
+|----------------|------------------|-----------|
+|creature_template|entry|500,000-500,001|
+|gameobject_template|entry|500,000-500,004|
+|broadcast_text|ID|500,000-500,001 and 500,003|
+|npc_text|ID|500,000-500,001 and 500,003|
+|creature|GUID|500,000,000-500,000,019|
+|gameobject|GUID|500,000,000-500,000,049|
+
+
 ## Contact Info
 If you would like to ask any questions, you can find me on the AzerothCore Discord as @Dalisar so feel free to DM me there!
 
@@ -43,3 +54,7 @@ v1.1.0: March 24, 2024
 - Players now know all player languages at character creation
 - Inns are now factionless and will give rested XP to any player regardless to faction
 - Players can now understand NPC/Creatures when they speak a Player-native language to ensure cross-faction language support
+
+v1.1.1: March 25, 2024
+- Fixed issue where FactionFree.sql did not have the INSERT statements for creature table in acore_world
+- Adjusted GUIDs to be more predictable and high range like the Entry/ID values used
