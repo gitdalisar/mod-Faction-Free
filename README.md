@@ -37,6 +37,7 @@ Special thanks to the AC and WOW Modding communities for their support. Also, sp
 ## Change Log
 v1.0.0: March 4, 2024
 - Initial Release
+
 v1.1.0: March 24, 2024
 - Teleport Network now included (Capital Cities and Instances) with NPCs, GObjects, and LUA scrpits
 - Players now know all player languages at character creation
