@@ -34,8 +34,8 @@ The list of entry, ID, and GUID values used in this module can be seen below:
 |gameobject_template|entry|500,000-500,004|
 |broadcast_text|ID|500,000-500,001 and 500,003|
 |npc_text|ID|500,000-500,001 and 500,003|
-|creature|GUID|500,000,000-500,000,019|
-|gameobject|GUID|500,000,000-500,000,049|
+|creature|GUID|5,000,000-5,000,019|
+|gameobject|GUID|5,000,000-5,000,049|
 
 
 ## Contact Info
