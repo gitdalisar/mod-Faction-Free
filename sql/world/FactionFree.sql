@@ -22,6 +22,7 @@ UPDATE `acore_world`.`playercreateinfo_skills` SET `raceMask`=1791 WHERE `raceMa
 /*This will update the broadcast_text, creature_text, and npc_text tables to ensure players can read NPC chat regardless of player faction.*/
 UPDATE `acore_world`.`broadcast_text` SET `LanguageID` = 0 WHERE `LanguageID` IN (1,2,3,6,7,10,13,14,33,35);
 UPDATE `acore_world`.`creature_text` SET `Language` = 0 WHERE `Language` IN (1,2,3,6,7,10,13,14,33,35);
+UPDATE `acore_world`.`npc_text` SET `lang0` = 0 WHERE `lang0` IN (1,2,3,6,7,10,13,14,33,35);
 UPDATE `acore_world`.`npc_text` SET `lang1` = 0 WHERE `lang1` IN (1,2,3,6,7,10,13,14,33,35);
 UPDATE `acore_world`.`npc_text` SET `lang2` = 0 WHERE `lang2` IN (1,2,3,6,7,10,13,14,33,35);
 UPDATE `acore_world`.`npc_text` SET `lang3` = 0 WHERE `lang3` IN (1,2,3,6,7,10,13,14,33,35);
