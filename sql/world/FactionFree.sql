@@ -31,6 +31,12 @@ UPDATE `acore_world`.`npc_text` SET `lang5` = 0 WHERE `lang5` IN (1,2,3,6,7,10,1
 UPDATE `acore_world`.`npc_text` SET `lang6` = 0 WHERE `lang6` IN (1,2,3,6,7,10,13,14,33,35);
 UPDATE `acore_world`.`npc_text` SET `lang7` = 0 WHERE `lang7` IN (1,2,3,6,7,10,13,14,33,35);
 
+/*This will update the item_template table to ensure all items that are faction locked are no longer set as such to allow for
+both cross-faction mount aquisition as well as faction specific quest drops since all quests are open at this point to both factions.*/
+UPDATE `acore_world`.`item_template` SET `AllowableRace` = 1791 WHERE `AllowableRace` IN (690,1101);
+UPDATE `acore_world`.`item_template` SET `FlagsExtra` = 0 WHERE `AllowableRace` = 1791 AND `FlagsExtra` IN (1,2);
+UPDATE `acore_world`.`item_template` SET `FlagsExtra` = 4 WHERE `AllowableRace` = 1791 AND `FlagsExtra` IN (5,6);
+
 /*This adds the broadcast_text and npc_text required for the two NPC that will teleport players. PLEASE NOTE: the NPC and their corresponding
 npc_text and broacast_text line up using 500000 and 500001, with both using 500003 for submenu text. If these are already in use 
 within your environment, you can change those values here.*/
