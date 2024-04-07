@@ -68,3 +68,7 @@ v1.2.0: March 28, 2024
 - Fixed issue where FactionFree.sql did not have the lang0 definition for npc_text to ensure cross-faction legibility of NPC speech
 - Added a .cpp file to be used in recompile to remove a player being flagged as PVP when in opposing faction's city
 - Players can now purchase faction locked mounts and recieve faction locked quest items regardless of player faction
+
+v1.3.0: April 7, 2024
+- Resolved various factions that would attack a player despite being friendly
+- Moved NPCs in airship battle to monster faction to allow for proper cross-faction combat
