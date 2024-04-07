@@ -10,9 +10,12 @@ For Manual installation:
 3. Run this using this command: SOURCE <path to .sql>;
 */
 
+
+--Version 1.0 Additions--
 /*This will update the quest_template table to allow all races to have access to all quests.*/
 UPDATE `acore_world`.`quest_template` SET `AllowableRaces` = 1791 WHERE `AllowableRaces` = 1101 OR `AllowableRaces` = 690;
 
+--Version 1.1 Additions--
 /*This will update all Inns to give rested xp bonus to players regaurdless to the faction of the player vs. the Inn's faction.*/
 UPDATE `acore_world`.`areatrigger_tavern` SET `faction` = 6 WHERE `faction` != 6;
 
@@ -137,3 +140,16 @@ INSERT INTO `acore_world`.`gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`,
 INSERT INTO `acore_world`.`gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`, `ScriptName`, `VerifiedBuild`, `Comment`) VALUES (5000047, 500002, 530, 0, 0, 1, 1, -1802.13, 5288.22, -11.6011, 2.63454, -0, -0, -0.968034, -0.250819, 300, 0, 1, '', NULL, NULL);
 INSERT INTO `acore_world`.`gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`, `ScriptName`, `VerifiedBuild`, `Comment`) VALUES (5000048, 500003, 530, 0, 0, 1, 1, -1802.13, 5288.22, -11.6011, 2.63454, -0, -0, -0.968034, -0.250819, 300, 0, 1, '', NULL, NULL);
 INSERT INTO `acore_world`.`gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`, `ScriptName`, `VerifiedBuild`, `Comment`) VALUES (5000049, 500004, 530, 0, 0, 1, 1, -1802.13, 5288.22, -11.6011, 2.63454, -0, -0, -0.968034, -0.250819, 300, 0, 1, '', NULL, NULL);
+
+--Version 1.3 Additions--
+/*This will modify Horde Factions that were still attacking Alliance players despite being friendly in the FactionTemplate.dbc file.*/
+UPDATE `creature_template` SET faction = 85 WHERE faction IN (83, 1734, 106);
+
+/*This will modify Alliance Factions that were still attacking Horde players despite being friendly in the FactionTemplate.dbc file.*/
+UPDATE `creature_template` SET faction = 11 WHERE faction IN (84, 1733, 210);
+
+/*This will modify the Duskwood Nightwatch two factions to use the single of 56 as 53 woudl still attack Horde players despite being friendly in the FactionTemplate.dbc file.*/
+UPDATE `creature_template` SET faction = 53 WHERE faction = 56;
+
+/*This will modify the faction of all Enemy NPC created during the airship fight in ICC to ensure Players of both factions can attack the enemy and progress the raid.*/
+UPDATE `creature_template` SET faction = 14 WHERE entry IN (36950,38406,38685,38686,36957,38404,38679,38680,36960,38262,38683,38684,36961,38261,38691,38692,36968,38403,38675,38676,36969,38408,38689,38690,36978,38407,38687,38688,36982,38405,38681,38682,37116,38256,38693,38694,37117,38257,38677,38678);
