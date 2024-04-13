@@ -44,7 +44,7 @@ The list of entry, ID, and GUID values used in this module can be seen below:
 
 
 ## Contact Info
-If you would like to ask any questions, you can find me on the AzerothCore Discord as @Dalisar so feel free to DM me there!
+If you would like to ask any questions, you can find me on the AzerothCore Discord (https://discord.gg/s8wwRYGaUT) as well as the WoW Modding Community Discord (https://discord.gg/zqSaT95fk2) as @Dalisar so feel free to DM me there!
 
 ## Special Thanks!
 Special thanks to the AC and WOW Modding communities for their support. Also, special shout out to those assisting in testing and code review:
