@@ -11,11 +11,11 @@ For Manual installation:
 */
 
 
---Version 1.0 Additions--
+--Version 1.0.0 Additions--
 /*This will update the quest_template table to allow all races to have access to all quests.*/
 UPDATE `acore_world`.`quest_template` SET `AllowableRaces` = 1791 WHERE `AllowableRaces` = 1101 OR `AllowableRaces` = 690;
 
---Version 1.1 Additions--
+--Version 1.1.0 Additions--
 /*This will update all Inns to give rested xp bonus to players regaurdless to the faction of the player vs. the Inn's faction.*/
 UPDATE `acore_world`.`areatrigger_tavern` SET `faction` = 6 WHERE `faction` != 6;
 
@@ -141,7 +141,7 @@ INSERT INTO `acore_world`.`gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`,
 INSERT INTO `acore_world`.`gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`, `ScriptName`, `VerifiedBuild`, `Comment`) VALUES (5000048, 500003, 530, 0, 0, 1, 1, -1802.13, 5288.22, -11.6011, 2.63454, -0, -0, -0.968034, -0.250819, 300, 0, 1, '', NULL, NULL);
 INSERT INTO `acore_world`.`gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`, `ScriptName`, `VerifiedBuild`, `Comment`) VALUES (5000049, 500004, 530, 0, 0, 1, 1, -1802.13, 5288.22, -11.6011, 2.63454, -0, -0, -0.968034, -0.250819, 300, 0, 1, '', NULL, NULL);
 
---Version 1.3 Additions--
+--Version 1.3.0 Additions--
 /*This will modify Horde Factions that were still attacking Alliance players despite being friendly in the FactionTemplate.dbc file.*/
 UPDATE `creature_template` SET faction = 85 WHERE faction IN (83, 1734, 106);
 
