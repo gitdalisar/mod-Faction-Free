@@ -153,3 +153,10 @@ UPDATE `creature_template` SET faction = 53 WHERE faction = 56;
 
 /*This will modify the faction of all Enemy NPC created during the airship fight in ICC to ensure Players of both factions can attack the enemy and progress the raid.*/
 UPDATE `creature_template` SET faction = 14 WHERE entry IN (36950,38406,38685,38686,36957,38404,38679,38680,36960,38262,38683,38684,36961,38261,38691,38692,36968,38403,38675,38676,36969,38408,38689,38690,36978,38407,38687,38688,36982,38405,38681,38682,37116,38256,38693,38694,37117,38257,38677,38678);
+
+--Version 1.3.1 Additions--
+/*Add faction 1735 to the list of Horde Factions that were still attacking Alliance Players*/
+UPDATE `creature_template` SET faction = 85 WHERE faction = 1735;
+
+/*Add faction 1732 to the list of Alliance Factions that were still attacking Horde Players*/
+UPDATE `creature_template` SET faction = 11 WHERE faction = 1732;
