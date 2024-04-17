@@ -72,3 +72,6 @@ v1.2.0: March 28, 2024
 v1.3.0: April 7, 2024
 - Resolved various factions that would attack a player despite being friendly
 - Moved NPCs in airship battle to monster faction to allow for proper cross-faction combat
+
+v1.3.1: April 16, 2024
+- Corrected two factions that were still attacking players despite being freindly, 1735 for Horde and 1732 for Alliance
