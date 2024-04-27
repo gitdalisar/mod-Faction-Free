@@ -8,14 +8,33 @@ For Manual installation:
 1. Ensure that you are logged into MySQL Database 
 2. Change to the acore_world database with:  USE acore_world;
 3. Run this using this command: SOURCE <path to .sql>;
+
+Version Change Log:
+Version 1.0.0:
+--Update quest_template to allow all factions to have access to all quests
+Version 1.1.0:
+--Update areatrigger_tavern to allow all Inns to give rest xp bonus to all factions
+--Update plareycreateinfo_skills to allow all races to know all languages
+--Update broadcast_text, creature_text, and npc_text to allow all players to read all npc chat
+--Update item_template to allow for all equipment to be used by all races and both factions
+--Update broadcast_text, npc_text, creature_template, gameobject_template, creature, gameobject to include teleport NPC network
+Version 1.3.0:
+--Update creature_template where Horde Factions that were still attacking Alliance to be set to Orgrimmar to be friendly to opposing faction
+--Update creature_template where Alliance Factions that were still attacking Horde to be set to Stormwind to be friendly to opposing faction
+--Update creature_template for Duskwood Nightwatch to single faction that appears to be passive to avoid attacking Horde players
+--Update creature_template for Enemy NPCs created during airship fight in ICC to an attackable faction
+Version 1.3.1:
+--Update creature_template for another set of Horde/Alliance factions to Orgrimmar/Stormwind to avoid player attacks
+Version 1.3.2:
+--Update creature_template to set Duskwood Nightwatch to Stormwind as both factions have a few NPC that attack Horde Players
+--Update item_template to get all items available to all races and factions as some were missed with v1.1.0
+--Update creature_template to set NPCs to attackable for The Battered Hilt quest chain
+--Added DELETE statements ahead of INSERT statements to allow this script to be ran cleanly after each patch update to module
 */
 
-
---Version 1.0.0 Additions--
 /*This will update the quest_template table to allow all races to have access to all quests.*/
 UPDATE `acore_world`.`quest_template` SET `AllowableRaces` = 1791 WHERE `AllowableRaces` = 1101 OR `AllowableRaces` = 690;
 
---Version 1.1.0 Additions--
 /*This will update all Inns to give rested xp bonus to players regaurdless to the faction of the player vs. the Inn's faction.*/
 UPDATE `acore_world`.`areatrigger_tavern` SET `faction` = 6 WHERE `faction` != 6;
 
@@ -36,13 +55,15 @@ UPDATE `acore_world`.`npc_text` SET `lang7` = 0 WHERE `lang7` IN (1,2,3,6,7,10,1
 
 /*This will update the item_template table to ensure all items that are faction locked are no longer set as such to allow for
 both cross-faction mount aquisition as well as faction specific quest drops since all quests are open at this point to both factions.*/
-UPDATE `acore_world`.`item_template` SET `AllowableRace` = 1791 WHERE `AllowableRace` IN (690,1101);
-UPDATE `acore_world`.`item_template` SET `FlagsExtra` = 0 WHERE `AllowableRace` = 1791 AND `FlagsExtra` IN (1,2);
-UPDATE `acore_world`.`item_template` SET `FlagsExtra` = 4 WHERE `AllowableRace` = 1791 AND `FlagsExtra` IN (5,6);
+UPDATE `acore_world`.`item_template` SET `FlagsExtra` = 0 WHERE `FlagsExtra` IN (1, 2);
+UPDATE `acore_world`.`item_template` SET `FlagsExtra` = 8192 WHERE `FlagsExtra` IN (8193, 8194);
+UPDATE `acore_world`.`item_template` SET `AllowableRace` = -1;
 
 /*This adds the broadcast_text and npc_text required for the two NPC that will teleport players. PLEASE NOTE: the NPC and their corresponding
 npc_text and broacast_text line up using 500000 and 500001, with both using 500003 for submenu text. If these are already in use 
 within your environment, you can change those values here.*/
+DELETE FROM `acore_world`.`broadcast_text` WHERE `ID` IN (500000, 500001, 500003);
+DELETE FROM `acore_world`.`npc_text` WHERE `ID` IN (500000, 500001, 500003);
 INSERT INTO `acore_world`.`broadcast_text` (`ID`, `LanguageID`, `MaleText`, `FemaleText`, `EmoteID1`, `EmoteID2`, `EmoteID3`, `EmoteDelay1`, `EmoteDelay2`, `EmoteDelay3`, `SoundEntriesId`, `EmotesID`, `Flags`, `VerifiedBuild`) VALUES (500000, 0, 'The name’s $N you say?$B$BYou look like the perfect expirim..ustomer for this feat of Gobl-ome Engineering! All the Goblin wonder, splendor, and craftswomanship you could hope for! With ... Gnomish... *in a mocking voice* “Scientific Process.”', 'The name’s $N you say?$B$BYou look like the perfect expirim..ustomer for this feat of Gobl-ome Engineering! All the Goblin wonder, splendor, and craftswomanship you could hope for! With ... Gnomish... *in a mocking voice* “Scientific Process.”', 0, 0, 0, 0, 0, 0, 0, 0, 1, 18019);
 INSERT INTO `acore_world`.`broadcast_text` (`ID`, `LanguageID`, `MaleText`, `FemaleText`, `EmoteID1`, `EmoteID2`, `EmoteID3`, `EmoteDelay1`, `EmoteDelay2`, `EmoteDelay3`, `SoundEntriesId`, `EmotesID`, `Flags`, `VerifiedBuild`) VALUES (500001, 0, 'Hey there how\'s it goin\', $N?$B$BCan I interest you in travel today? Only the finest in Gnom-lin Engineering! The precise science of Gnomish ingenuity with... Goblin... explosiony-ness?', 'Hey there how\'s it goin\', $N?$B$BCan I interest you in travel today? Only the finest in Gnom-lin Engineering! The precise science of Gnomish ingenuity with... Goblin... explosiony-ness?', 0, 0, 0, 0, 0, 0, 0, 0, 1, 18019);
 INSERT INTO `acore_world`.`broadcast_text` (`ID`, `LanguageID`, `MaleText`, `FemaleText`, `EmoteID1`, `EmoteID2`, `EmoteID3`, `EmoteDelay1`, `EmoteDelay2`, `EmoteDelay3`, `SoundEntriesId`, `EmotesID`, `Flags`, `VerifiedBuild`) VALUES (500003, 0, 'Decide where you would like to go? Remember our network requires a lot of power, so anything outside the cities is a one way trip!', 'Decide where you would like to go? Remember our network requires a lot of power, so anything outside the cities is a one way trip!', 0, 0, 0, 0, 0, 0, 0, 0, 1, 18019);
@@ -53,12 +74,14 @@ INSERT INTO `acore_world`.`npc_text` (`ID`, `text0_0`, `text0_1`, `BroadcastText
 /*This will create the two NPC used for the teleport network to aide in travel around the world, especially for ares where one faction
 may have fewer cities or flight paths. They will use entry 500000 and 500001. If these are already in use within your environment,
 you can change those values here.*/
+DELETE FROM `acore_world`.`creature_template` WHERE `entry` IN (500000, 500001);
 INSERT INTO `acore_world`.`creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `IconName`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction`, `npcflag`, `speed_walk`, `speed_run`, `speed_swim`, `speed_flight`, `detection_range`, `scale`, `rank`, `dmgschool`, `DamageModifier`, `BaseAttackTime`, `RangeAttackTime`, `BaseVariance`, `RangeVariance`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `HoverHeight`, `HealthModifier`, `ManaModifier`, `ArmorModifier`, `ExperienceModifier`, `RacialLeader`, `movementId`, `RegenHealth`, `mechanic_immune_mask`, `spell_school_immune_mask`, `flags_extra`, `ScriptName`, `VerifiedBuild`) VALUES (500000, 0, 0, 0, 0, 0, 26375, 0, 0, 0, 'Quinley Gearspark', 'Gobl-ome Engieering Co.', NULL, 0, 35, 35, 0, 474, 1, 1, 1.14286, 1, 1, 18, 1, 0, 0, 1, 2000, 2000, 1, 1, 8, 512, 2048, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1.1, 1, 1, 1, 0, 0, 1, 0, 0, 2, '', 12340);
 INSERT INTO `acore_world`.`creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `IconName`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction`, `npcflag`, `speed_walk`, `speed_run`, `speed_swim`, `speed_flight`, `detection_range`, `scale`, `rank`, `dmgschool`, `DamageModifier`, `BaseAttackTime`, `RangeAttackTime`, `BaseVariance`, `RangeVariance`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `HoverHeight`, `HealthModifier`, `ManaModifier`, `ArmorModifier`, `ExperienceModifier`, `RacialLeader`, `movementId`, `RegenHealth`, `mechanic_immune_mask`, `spell_school_immune_mask`, `flags_extra`, `ScriptName`, `VerifiedBuild`) VALUES (500001, 0, 0, 0, 0, 0, 7039, 0, 0, 0, 'Harleen Gearspark', 'Gnom-lin Engieering Co.', NULL, 0, 35, 35, 0, 474, 1, 1, 1.14286, 1, 1, 18, 1, 0, 0, 1, 2000, 2000, 1, 1, 1, 512, 2048, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1.1, 1, 1, 1, 0, 0, 1, 0, 0, 2, '', 12340);
 
 /*This will create a series of objects in gameobject_template that were used to add asthetics to the teleport network. They have no purpose 
 other than just to make the area stand out and look better. They will use entry 500000-500004. If these are already in use within your 
 environment, you can change those values here.*/
+DELETE FROM `acore_world`.`gameobject_template` WHERE `entry` BETWEEN 500000 AND 500004;
 INSERT INTO `acore_world`.`gameobject_template` (`entry`, `type`, `displayId`, `name`, `IconName`, `castBarCaption`, `unk1`, `size`, `Data0`, `Data1`, `Data2`, `Data3`, `Data4`, `Data5`, `Data6`, `Data7`, `Data8`, `Data9`, `Data10`, `Data11`, `Data12`, `Data13`, `Data14`, `Data15`, `Data16`, `Data17`, `Data18`, `Data19`, `Data20`, `Data21`, `Data22`, `Data23`, `AIName`, `ScriptName`, `VerifiedBuild`) VALUES (500000, 0, 7135, 'FactionFreeTeleporter-WarpDevice', '', '', '', 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', '', 12340);
 INSERT INTO `acore_world`.`gameobject_template` (`entry`, `type`, `displayId`, `name`, `IconName`, `castBarCaption`, `unk1`, `size`, `Data0`, `Data1`, `Data2`, `Data3`, `Data4`, `Data5`, `Data6`, `Data7`, `Data8`, `Data9`, `Data10`, `Data11`, `Data12`, `Data13`, `Data14`, `Data15`, `Data16`, `Data17`, `Data18`, `Data19`, `Data20`, `Data21`, `Data22`, `Data23`, `AIName`, `ScriptName`, `VerifiedBuild`) VALUES (500001, 0, 2047, 'FactionFreeTeleporter-MechanicalDevice', '', '', '', 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', '', 12340);
 INSERT INTO `acore_world`.`gameobject_template` (`entry`, `type`, `displayId`, `name`, `IconName`, `castBarCaption`, `unk1`, `size`, `Data0`, `Data1`, `Data2`, `Data3`, `Data4`, `Data5`, `Data6`, `Data7`, `Data8`, `Data9`, `Data10`, `Data11`, `Data12`, `Data13`, `Data14`, `Data15`, `Data16`, `Data17`, `Data18`, `Data19`, `Data20`, `Data21`, `Data22`, `Data23`, `AIName`, `ScriptName`, `VerifiedBuild`) VALUES (500002, 0, 8632, 'FactionFreeTeleporter-UlduarDevice', '', '', '', 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', '', 9767);
@@ -67,6 +90,7 @@ INSERT INTO `acore_world`.`gameobject_template` (`entry`, `type`, `displayId`, `
 
 /*This will insert all of the NPC creatures into the appropriate locations within the creature table. They will use GUIDs 
 500000000-500000019. If If these are already in use within your environment, you can change those values here.*/
+DELETE FROM `acore_world`.`creature` WHERE `guid` BETWEEN 5000000 AND 5000019;
 INSERT INTO `acore_world`.`creature` (`guid`, `id1`, `id2`, `id3`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `wander_distance`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `unit_flags`, `dynamicflags`, `ScriptName`, `VerifiedBuild`, `CreateObject`, `Comment`) VALUES (5000000, 500000, 0, 0, 0, 0, 0, 1, 1, 0, -4909.89, -929.523, 501.605, 5.28553, 300, 0, 0, 993, 2680, 0, 0, 0, 0, '', NULL, 0, NULL);
 INSERT INTO `acore_world`.`creature` (`guid`, `id1`, `id2`, `id3`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `wander_distance`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `unit_flags`, `dynamicflags`, `ScriptName`, `VerifiedBuild`, `CreateObject`, `Comment`) VALUES (5000001, 500000, 0, 0, 1, 0, 0, 1, 1, 0, 1657.53, -4323.54, 62.1195, 5.70502, 300, 0, 0, 993, 2680, 0, 0, 0, 0, '', NULL, 0, NULL);
 INSERT INTO `acore_world`.`creature` (`guid`, `id1`, `id2`, `id3`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `wander_distance`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `unit_flags`, `dynamicflags`, `ScriptName`, `VerifiedBuild`, `CreateObject`, `Comment`) VALUES (5000002, 500000, 0, 0, 0, 0, 0, 1, 1, 0, -8840.8, 469.371, 109.634, 1.92423, 300, 0, 0, 993, 2680, 0, 0, 0, 0, '', NULL, 0, NULL);
@@ -90,6 +114,7 @@ INSERT INTO `acore_world`.`creature` (`guid`, `id1`, `id2`, `id3`, `map`, `zoneI
 
 /*This will insert all of the teleporter game objects into the appropriate locations within the gameobject table. They will use GUIDs 
 500000000-500000049. If If these are already in use within your environment, you can change those values here.*/
+DELETE FROM `acore_world`.`gameobject` WHERE `guid` BETWEEN 5000000 AND 5000049;
 INSERT INTO `acore_world`.`gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`, `ScriptName`, `VerifiedBuild`, `Comment`) VALUES (5000000, 500000, 0, 0, 0, 1, 1, -4913.49, -929.127, 501.626, 5.2698, -0, -0, -0.485288, 0.874355, 300, 0, 1, '', NULL, NULL);
 INSERT INTO `acore_world`.`gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`, `ScriptName`, `VerifiedBuild`, `Comment`) VALUES (5000001, 500001, 0, 0, 0, 1, 1, -4913.49, -929.127, 501.626, 5.2698, -0, -0, -0.485288, 0.874355, 300, 0, 1, '', NULL, NULL);
 INSERT INTO `acore_world`.`gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`, `ScriptName`, `VerifiedBuild`, `Comment`) VALUES (5000002, 500002, 0, 0, 0, 1, 1, -4913.49, -929.127, 502.453, 5.2698, -0, -0, -0.485288, 0.874355, 300, 0, 1, '', NULL, NULL);
@@ -141,22 +166,14 @@ INSERT INTO `acore_world`.`gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`,
 INSERT INTO `acore_world`.`gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`, `ScriptName`, `VerifiedBuild`, `Comment`) VALUES (5000048, 500003, 530, 0, 0, 1, 1, -1802.13, 5288.22, -11.6011, 2.63454, -0, -0, -0.968034, -0.250819, 300, 0, 1, '', NULL, NULL);
 INSERT INTO `acore_world`.`gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`, `ScriptName`, `VerifiedBuild`, `Comment`) VALUES (5000049, 500004, 530, 0, 0, 1, 1, -1802.13, 5288.22, -11.6011, 2.63454, -0, -0, -0.968034, -0.250819, 300, 0, 1, '', NULL, NULL);
 
---Version 1.3.0 Additions--
 /*This will modify Horde Factions that were still attacking Alliance players despite being friendly in the FactionTemplate.dbc file.*/
-UPDATE `creature_template` SET faction = 85 WHERE faction IN (83, 1734, 106);
+UPDATE `creature_template` SET faction = 85 WHERE faction IN (83, 1734, 106, 1735);
 
 /*This will modify Alliance Factions that were still attacking Horde players despite being friendly in the FactionTemplate.dbc file.*/
-UPDATE `creature_template` SET faction = 11 WHERE faction IN (84, 1733, 210);
-
-/*This will modify the Duskwood Nightwatch two factions to use the single of 56 as 53 woudl still attack Horde players despite being friendly in the FactionTemplate.dbc file.*/
-UPDATE `creature_template` SET faction = 53 WHERE faction = 56;
+UPDATE `creature_template` SET faction = 11 WHERE faction IN (53, 56, 84, 1733, 210, 1732);
 
 /*This will modify the faction of all Enemy NPC created during the airship fight in ICC to ensure Players of both factions can attack the enemy and progress the raid.*/
 UPDATE `creature_template` SET faction = 14 WHERE entry IN (36950,38406,38685,38686,36957,38404,38679,38680,36960,38262,38683,38684,36961,38261,38691,38692,36968,38403,38675,38676,36969,38408,38689,38690,36978,38407,38687,38688,36982,38405,38681,38682,37116,38256,38693,38694,37117,38257,38677,38678);
 
---Version 1.3.1 Additions--
-/*Add faction 1735 to the list of Horde Factions that were still attacking Alliance Players*/
-UPDATE `creature_template` SET faction = 85 WHERE faction = 1735;
-
-/*Add faction 1732 to the list of Alliance Factions that were still attacking Horde Players*/
-UPDATE `creature_template` SET faction = 11 WHERE faction = 1732;
+/*This will modify the faction of the two NPCs, Sunreaver and Silver Covenant Agents, required to be killed for the WOTLK "The Battered Hilt" quest chains by the opposing faction*/
+UPDATE `acore_world`.`creature_template` SET `faction` = 7 WHERE `entry` IN (36776, 36774);
