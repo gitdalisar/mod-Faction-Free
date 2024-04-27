@@ -75,3 +75,9 @@ v1.3.0: April 7, 2024
 
 v1.3.1: April 16, 2024
 - Corrected two factions that were still attacking players despite being freindly, 1735 for Horde and 1732 for Alliance
+
+v1.3.2: April 26, 2024
+- Updated Duskwood Nightwatch to Stormwind faction to remove aggression towards Horde players
+- Corrected all factional item issues to ensure pvp gear and facitonal gear in a mixed faction raid could be earned by all
+- Set NPCs required to be attackable for _The Battered Hilt_ quest to creature faction ensure completion is possible
+- Updated FactionFree.sql to include DELETE statements ahead of INSERT statments for easier reuse of file as patches are released
