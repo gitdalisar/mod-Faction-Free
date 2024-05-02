@@ -81,3 +81,8 @@ v1.3.2: April 26, 2024
 - Corrected all factional item issues to ensure pvp gear and facitonal gear in a mixed faction raid could be earned by all
 - Set NPCs required to be attackable for _The Battered Hilt_ quest to creature faction ensure completion is possible
 - Updated FactionFree.sql to include DELETE statements ahead of INSERT statments for easier reuse of file as patches are released
+
+v1.3.3: May 1, 2024
+- Rebuilt server from master for code refresh, updated the clean PlayerUpdates.cpp to new version here
+- Removed two unnecessary factions from FactionTemplate.dbc as reported in discord release forum
+- Recreated Patch-F.MPQ to have the updated FactionTemplate.dbc post corrections
