@@ -86,3 +86,6 @@ v1.3.3: May 1, 2024
 - Rebuilt server from master for code refresh, updated the clean PlayerUpdates.cpp to new version here
 - Removed two unnecessary factions from FactionTemplate.dbc as reported in discord release forum
 - Recreated Patch-F.MPQ to have the updated FactionTemplate.dbc post corrections
+
+v1.3.4: May 6, 2024
+- Updated Raventusk Village to Orgrimmar to avoid NPCs attacking Alliance players
