@@ -30,6 +30,8 @@ Version 1.3.2:
 --Update item_template to get all items available to all races and factions as some were missed with v1.1.0
 --Update creature_template to set NPCs to attackable for The Battered Hilt quest chain
 --Added DELETE statements ahead of INSERT statements to allow this script to be ran cleanly after each patch update to module
+Version 1.3.3:
+--Update creature_template to set Raventusk Village to Orgrimmar as that attacked Alliance Players
 */
 
 /*This will update the quest_template table to allow all races to have access to all quests.*/
@@ -167,7 +169,7 @@ INSERT INTO `acore_world`.`gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`,
 INSERT INTO `acore_world`.`gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`, `ScriptName`, `VerifiedBuild`, `Comment`) VALUES (5000049, 500004, 530, 0, 0, 1, 1, -1802.13, 5288.22, -11.6011, 2.63454, -0, -0, -0.968034, -0.250819, 300, 0, 1, '', NULL, NULL);
 
 /*This will modify Horde Factions that were still attacking Alliance players despite being friendly in the FactionTemplate.dbc file.*/
-UPDATE `creature_template` SET faction = 85 WHERE faction IN (83, 1734, 106, 1735);
+UPDATE `creature_template` SET faction = 85 WHERE faction IN (83, 1734, 106, 1735, 1495);
 
 /*This will modify Alliance Factions that were still attacking Horde players despite being friendly in the FactionTemplate.dbc file.*/
 UPDATE `creature_template` SET faction = 11 WHERE faction IN (53, 56, 84, 1733, 210, 1732);
