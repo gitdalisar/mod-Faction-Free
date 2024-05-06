@@ -48,7 +48,7 @@ If you would like to ask any questions, you can find me on the AzerothCore Disco
 
 ## Special Thanks!
 Special thanks to the AC and WOW Modding communities for their support. Also, special shout out to those assisting in testing and code review:
-@GitFinntastic, @GitVenyce, and @Aldori15
+@GitFinntastic, @GitVenyce, and @Aldori15, @DarkLava, @Ghostsupthere
 
 ## Change Log
 v1.0.0: March 4, 2024
