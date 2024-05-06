@@ -30,7 +30,7 @@ Version 1.3.2:
 --Update item_template to get all items available to all races and factions as some were missed with v1.1.0
 --Update creature_template to set NPCs to attackable for The Battered Hilt quest chain
 --Added DELETE statements ahead of INSERT statements to allow this script to be ran cleanly after each patch update to module
-Version 1.3.3:
+Version 1.3.4:
 --Update creature_template to set Raventusk Village to Orgrimmar as that attacked Alliance Players
 */
 
