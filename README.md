@@ -89,3 +89,6 @@ v1.3.3: May 1, 2024
 
 v1.3.4: May 6, 2024
 - Updated Raventusk Village to Orgrimmar to avoid NPCs attacking Alliance players
+
+v1.3.5: December 12, 2024
+- Updated PlayerUpdates.cpp and FactionFree.sql to work with current Azerothcore main branch after changes to .cpp and db structure
