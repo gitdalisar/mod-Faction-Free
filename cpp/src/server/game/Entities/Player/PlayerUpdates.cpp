@@ -79,6 +79,7 @@ void Player::Update(uint32 p_time)
 
     // used to implement delayed far teleports
     SetMustDelayTeleport(true);
+    ProcessSpellQueue();
     Unit::Update(p_time);
     SetMustDelayTeleport(false);
 
@@ -460,6 +461,44 @@ void Player::UpdateNextMailTimeAndUnreads()
     }
 }
 
+void Player::UpdateLFGChannel()
+{
+    if (!sWorld->getBoolConfig(CONFIG_RESTRICTED_LFG_CHANNEL))
+        return;
+
+    ChannelMgr* cMgr = ChannelMgr::forTeam(GetTeamId());
+    if (!cMgr)
+        return;
+
+    ChatChannelsEntry const* cce = sChatChannelsStore.LookupEntry(26); /*LookingForGroup*/
+    Channel* cLFG = cMgr->GetJoinChannel(cce->pattern[m_session->GetSessionDbcLocale()], cce->ChannelID);
+    if (!cLFG)
+        return;
+
+    Channel* cUsed = nullptr;
+    for (Channel* channel : m_channels)
+        if (channel && channel->GetChannelId() == cce->ChannelID)
+        {
+            cUsed = cLFG;
+            break;
+        }
+
+    if (IsUsingLfg())
+    {
+        if (cUsed == cLFG)
+            return;
+
+        cLFG->JoinChannel(this, "");
+    }
+    else
+    {
+        if (cLFG != cUsed)
+            return;
+
+        cLFG->LeaveChannel(this, true);
+    }
+}
+
 void Player::UpdateLocalChannels(uint32 newZone)
 {
     // pussywizard: mutex needed (tc changed opcode to THREAD UNSAFE)
@@ -511,17 +550,16 @@ void Player::UpdateLocalChannels(uint32 newZone)
                                   // names are not changing
 
                     char        new_channel_name_buf[100];
-                    char const* currentNameExt;
+                    std::string currentNameExt;
 
                     if (channel->flags & CHANNEL_DBC_FLAG_CITY_ONLY)
-                        currentNameExt = sObjectMgr->GetAcoreStringForDBCLocale(
-                            LANG_CHANNEL_CITY);
+                        currentNameExt = sObjectMgr->GetAcoreStringForDBCLocale(LANG_CHANNEL_CITY);
                     else
-                        currentNameExt = current_zone_name.c_str();
+                        currentNameExt = current_zone_name;
 
                     snprintf(new_channel_name_buf, 100,
                              channel->pattern[m_session->GetSessionDbcLocale()],
-                             currentNameExt);
+                             currentNameExt.c_str());
 
                     joinChannel = cMgr->GetJoinChannel(new_channel_name_buf,
                                                        channel->ChannelID);
@@ -670,7 +708,7 @@ void Player::UpdateAllRatings()
 // skill+step, checking for max value
 bool Player::UpdateSkill(uint32 skill_id, uint32 step)
 {
-    if (!skill_id)
+    if (!skill_id || !sScriptMgr->CanPlayerUpdateSkill(this, skill_id))
         return false;
 
     SkillStatusMap::iterator itr = mSkillStatus.find(skill_id);
@@ -681,6 +719,8 @@ bool Player::UpdateSkill(uint32 skill_id, uint32 step)
     uint32 data       = GetUInt32Value(valueIndex);
     uint32 value      = SKILL_VALUE(data);
     uint32 max        = SKILL_MAX(data);
+
+    sScriptMgr->OnBeforePlayerUpdateSkill(this, skill_id, value, max, step);
 
     if ((!max) || (!value) || (value >= max))
         return false;
@@ -698,6 +738,8 @@ bool Player::UpdateSkill(uint32 skill_id, uint32 step)
         UpdateSkillEnchantments(skill_id, value, new_value);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_SKILL_LEVEL,
                                   skill_id);
+
+        sScriptMgr->OnPlayerUpdateSkill(this, skill_id, value, max, step, new_value);
         return true;
     }
 
@@ -873,7 +915,7 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
     LOG_DEBUG("entities.player.skills",
               "UpdateSkillPro(SkillId {}, Chance {:3.1f}%)", SkillId,
               Chance / 10.0f);
-    if (!SkillId)
+    if (!SkillId || !sScriptMgr->CanPlayerUpdateSkill(this, SkillId))
         return false;
 
     if (Chance <= 0) // speedup in 0 chance case
@@ -891,8 +933,10 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
     uint32 valueIndex = PLAYER_SKILL_VALUE_INDEX(itr->second.pos);
 
     uint32 data       = GetUInt32Value(valueIndex);
-    uint16 SkillValue = SKILL_VALUE(data);
-    uint16 MaxValue   = SKILL_MAX(data);
+    uint32 SkillValue = SKILL_VALUE(data);
+    uint32 MaxValue   = SKILL_MAX(data);
+
+    sScriptMgr->OnBeforePlayerUpdateSkill(this, SkillId, SkillValue, MaxValue, step);
 
     if (!MaxValue || !SkillValue || SkillValue >= MaxValue)
         return false;
@@ -924,6 +968,8 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
         LOG_DEBUG("entities.player.skills",
                   "Player::UpdateSkillPro Chance={:3.1f}% taken",
                   Chance / 10.0f);
+
+        sScriptMgr->OnPlayerUpdateSkill(this, SkillId, SkillValue, MaxValue, step, new_value);
         return true;
     }
 
@@ -940,9 +986,7 @@ void Player::UpdateWeaponSkill(Unit* victim, WeaponAttackType attType, Item* ite
     if (GetShapeshiftForm() == FORM_TREE)
         return; // use weapon but not skill up
 
-    if (victim->IsCreature() &&
-        (victim->ToCreature()->GetCreatureTemplate()->flags_extra &
-         CREATURE_FLAG_EXTRA_NO_SKILL_GAINS))
+    if (victim->IsCreature() && victim->ToCreature()->HasFlagsExtra(CREATURE_FLAG_EXTRA_NO_SKILL_GAINS))
         return;
 
     uint32 weapon_skill_gain = sWorld->getIntConfig(CONFIG_SKILL_GAIN_WEAPON);
@@ -1128,7 +1172,7 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation,
         SetGroupUpdateFlag(GROUP_UPDATE_FLAG_POSITION);
 
     if (GetTrader() && !IsWithinDistInMap(GetTrader(), INTERACTION_DISTANCE))
-        GetSession()->SendCancelTrade();
+        GetSession()->SendCancelTrade(TRADE_STATUS_TRADE_CANCELED);
 
     CheckAreaExploreAndOutdoor();
 
@@ -1208,9 +1252,7 @@ void Player::UpdateArea(uint32 newArea)
 void Player::UpdateZone(uint32 newZone, uint32 newArea)
 {
     if (!newZone)
-    {
         return;
-    }
 
     if (m_zoneUpdateId != newZone)
     {
@@ -1226,6 +1268,8 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
         if (Guild* guild = GetGuild())
             guild->UpdateMemberData(this, GUILD_MEMBER_DATA_ZONEID, newZone);
     }
+
+    GetMap()->UpdatePlayerZoneStats(m_zoneUpdateId, newZone);
 
     // group update
     if (GetGroup())
@@ -1256,6 +1300,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     // in PvE, only opposition team capital
     switch (zone->team)
     {
+    
     /* FACTION FREE MOD by GITDALISAR
     ---- START COMMENTING OUT FACTIONAL CHECK FOR CITIES ----
     case AREATEAM_ALLY:
@@ -1270,7 +1315,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
         break;
     ---- STOP COMMENTING OUT FACTIONAL CHECK FOR CITITES ----
     END CHANGES FOR FACTION FREE MOD by GITDALISAR */
-
+    
     case AREATEAM_NONE:
         // overwrite for battlegrounds, maybe batter some zone flags but current
         // known not 100% fit to this
@@ -2259,4 +2304,104 @@ void Player::ProcessTerrainStatusUpdate()
     }
     else
         m_MirrorTimerFlags &= ~(UNDERWATER_INWATER | UNDERWATER_INLAVA | UNDERWATER_INSLIME | UNDERWATER_INDARKWATER);
+}
+
+uint32 Player::GetSpellQueueWindow() const
+{
+    return sWorld->getIntConfig(CONFIG_SPELL_QUEUE_WINDOW);
+}
+
+bool Player::CanExecutePendingSpellCastRequest(SpellInfo const* spellInfo)
+{
+    if (GetGlobalCooldownMgr().HasGlobalCooldown(spellInfo))
+        return false;
+
+    if (GetSpellCooldownDelay(spellInfo->Id) > GetSpellQueueWindow())
+        return false;
+
+    for (CurrentSpellTypes spellSlot : {CURRENT_MELEE_SPELL, CURRENT_GENERIC_SPELL})
+        if (Spell* spell = GetCurrentSpell(spellSlot))
+        {
+            bool autoshot = spell->m_spellInfo->IsAutoRepeatRangedSpell();
+            if (IsNonMeleeSpellCast(false, true, true, autoshot))
+                return false;
+        }
+    return true;
+}
+
+const PendingSpellCastRequest* Player::GetCastRequest(uint32 category) const
+{
+    for (const PendingSpellCastRequest& request : SpellQueue)
+        if (request.category == category)
+            return &request;
+    return nullptr;
+}
+
+bool Player::CanRequestSpellCast(SpellInfo const* spellInfo)
+{
+    if (!sWorld->getBoolConfig(CONFIG_SPELL_QUEUE_ENABLED))
+        return false;
+
+    // Check for existing cast request with the same category
+    if (GetCastRequest(spellInfo->GetCategory()))
+        return false;
+
+    if (GetGlobalCooldownMgr().GetGlobalCooldown(spellInfo) > GetSpellQueueWindow())
+        return false;
+
+    if (GetSpellCooldownDelay(spellInfo->Id) > GetSpellQueueWindow())
+        return false;
+
+    // If there is an existing cast that will last longer than the allowable
+    // spell queue window, then we can't request a new spell cast
+    for (CurrentSpellTypes spellSlot : { CURRENT_MELEE_SPELL, CURRENT_GENERIC_SPELL })
+        if (Spell* spell = GetCurrentSpell(spellSlot))
+            if (spell->GetCastTimeRemaining() > static_cast<int32>(GetSpellQueueWindow()))
+                return false;
+
+    return true;
+}
+
+void Player::ExecuteOrCancelSpellCastRequest(PendingSpellCastRequest* request, bool isCancel /* = false*/)
+{
+    if (isCancel)
+        request->cancelInProgress = true;
+
+    if (WorldSession* session = GetSession())
+    {
+        if (request->isItem)
+            session->HandleUseItemOpcode(request->requestPacket);
+        else
+            session->HandleCastSpellOpcode(request->requestPacket);
+    }
+}
+
+void Player::ProcessSpellQueue()
+{
+    while (!SpellQueue.empty())
+    {
+        PendingSpellCastRequest& request = SpellQueue.front(); // Peek at the first spell
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(request.spellId);
+        if (!spellInfo)
+        {
+            LOG_ERROR("entities.player", "Player::ProcessSpellQueue: Invalid spell {}", request.spellId);
+            SpellQueue.clear();
+            break;
+        }
+        if (CanExecutePendingSpellCastRequest(spellInfo))
+        {
+            ExecuteOrCancelSpellCastRequest(&request);
+
+            // ExecuteOrCancelSpellCastRequest() can lead to clearing the SpellQueue.
+            // Example scenario:
+            //   Handling a spell → Dealing damage to yourself (e.g., spell_pri_vampiric_touch) →
+            //   Killing yourself → Player::setDeathState() → SpellQueue.clear().
+            // Calling std::deque::pop_front() on an empty deque results in undefined behavior,
+            // so an additional check is added.
+            if (!SpellQueue.empty())
+                SpellQueue.pop_front();
+        }
+        else // If the first spell can't execute, stop processing
+            break;
+    }
 }
