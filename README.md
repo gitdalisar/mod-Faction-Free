@@ -92,3 +92,7 @@ v1.3.4: May 6, 2024
 
 v1.3.5: December 12, 2024
 - Updated PlayerUpdates.cpp and FactionFree.sql to work with current Azerothcore main branch after changes to .cpp and db structure
+
+v1.3.6: February 15, 2025
+- Updated PlayerUpdates.cpp to work with current Azerothcore main branch after changes to .cpp
+- Added faction 1637 to FactionFree.sql to correct faction Horde NPCs attacking Alliance players
