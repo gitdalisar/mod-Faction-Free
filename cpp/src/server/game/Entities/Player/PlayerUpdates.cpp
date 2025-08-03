@@ -55,7 +55,7 @@ void Player::Update(uint32 p_time)
     if (!IsInWorld())
         return;
 
-    sScriptMgr->OnBeforePlayerUpdate(this, p_time);
+    sScriptMgr->OnPlayerBeforeUpdate(this, p_time);
 
     // undelivered mail
     if (m_nextMailDelivereTime && m_nextMailDelivereTime <= GameTime::GetGameTime().count())
@@ -181,8 +181,8 @@ void Player::Update(uint32 p_time)
                         m_swingErrorMsg = 1;
                     }
                 }
-                // 120 degrees of radiant range
-                else if (!HasInArc(2 * M_PI / 3, victim))
+                // 120 degrees of radiant range, if player is not in boundary radius
+                else if (!IsWithinBoundaryRadius(victim) && !HasInArc(2 * float(M_PI) / 3, victim))
                 {
                     setAttackTimer(BASE_ATTACK, 100);
                     if (m_swingErrorMsg != 2) // send single time (client auto repeat)
@@ -211,8 +211,8 @@ void Player::Update(uint32 p_time)
             {
                 if (!IsWithinMeleeRange(victim))
                     setAttackTimer(OFF_ATTACK, 100);
-                else if (!HasInArc(2 * M_PI / 3, victim))
-                    setAttackTimer(OFF_ATTACK, 100);
+                else if (!IsWithinBoundaryRadius(victim) && !HasInArc(2 * float(M_PI) / 3, victim))
+                    setAttackTimer(BASE_ATTACK, 100);
                 else
                 {
                     // prevent base and off attack in same time, delay attack at
@@ -708,7 +708,7 @@ void Player::UpdateAllRatings()
 // skill+step, checking for max value
 bool Player::UpdateSkill(uint32 skill_id, uint32 step)
 {
-    if (!skill_id || !sScriptMgr->CanPlayerUpdateSkill(this, skill_id))
+    if (!skill_id || !sScriptMgr->OnPlayerCanUpdateSkill(this, skill_id))
         return false;
 
     SkillStatusMap::iterator itr = mSkillStatus.find(skill_id);
@@ -720,7 +720,7 @@ bool Player::UpdateSkill(uint32 skill_id, uint32 step)
     uint32 value      = SKILL_VALUE(data);
     uint32 max        = SKILL_MAX(data);
 
-    sScriptMgr->OnBeforePlayerUpdateSkill(this, skill_id, value, max, step);
+    sScriptMgr->OnPlayerBeforeUpdateSkill(this, skill_id, value, max, step);
 
     if ((!max) || (!value) || (value >= max))
         return false;
@@ -768,7 +768,7 @@ bool Player::UpdateGatherSkill(uint32 SkillId, uint32 SkillValue,
 
     uint32 gathering_skill_gain =
         sWorld->getIntConfig(CONFIG_SKILL_GAIN_GATHERING);
-    sScriptMgr->OnUpdateGatheringSkill(this, SkillId, SkillValue, RedLevel + 100, RedLevel + 50, RedLevel + 25, gathering_skill_gain);
+    sScriptMgr->OnPlayerUpdateGatheringSkill(this, SkillId, SkillValue, RedLevel + 100, RedLevel + 50, RedLevel + 25, gathering_skill_gain);
 
     // For skinning and Mining chance decrease with level. 1-74 - no decrease,
     // 75-149 - 2 times, 225-299 - 8 times
@@ -846,7 +846,7 @@ bool Player::UpdateCraftSkill(uint32 spellid)
 
             uint32 craft_skill_gain =
                 sWorld->getIntConfig(CONFIG_SKILL_GAIN_CRAFTING);
-            sScriptMgr->OnUpdateCraftingSkill(this, _spell_idx->second, SkillValue, craft_skill_gain);
+            sScriptMgr->OnPlayerUpdateCraftingSkill(this, _spell_idx->second, SkillValue, craft_skill_gain);
 
             return UpdateSkillPro(
                 _spell_idx->second->SkillLine,
@@ -915,7 +915,7 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
     LOG_DEBUG("entities.player.skills",
               "UpdateSkillPro(SkillId {}, Chance {:3.1f}%)", SkillId,
               Chance / 10.0f);
-    if (!SkillId || !sScriptMgr->CanPlayerUpdateSkill(this, SkillId))
+    if (!SkillId || !sScriptMgr->OnPlayerCanUpdateSkill(this, SkillId))
         return false;
 
     if (Chance <= 0) // speedup in 0 chance case
@@ -936,7 +936,7 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
     uint32 SkillValue = SKILL_VALUE(data);
     uint32 MaxValue   = SKILL_MAX(data);
 
-    sScriptMgr->OnBeforePlayerUpdateSkill(this, SkillId, SkillValue, MaxValue, step);
+    sScriptMgr->OnPlayerBeforeUpdateSkill(this, SkillId, SkillValue, MaxValue, step);
 
     if (!MaxValue || !SkillValue || SkillValue >= MaxValue)
         return false;
@@ -1249,17 +1249,20 @@ void Player::UpdateArea(uint32 newArea)
         RemoveRestFlag(REST_FLAG_IN_FACTION_AREA);
 }
 
-void Player::UpdateZone(uint32 newZone, uint32 newArea)
+void Player::UpdateZone(uint32 newZone, uint32 newArea, bool force)
 {
     if (!newZone)
         return;
 
-    if (m_zoneUpdateId != newZone)
+    if (m_zoneUpdateId != newZone || force)
     {
         sOutdoorPvPMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
         sOutdoorPvPMgr->HandlePlayerEnterZone(this, newZone);
-        sWorldState->HandlePlayerLeaveZone(this, static_cast<WorldStateZoneId>(m_zoneUpdateId));
-        sWorldState->HandlePlayerEnterZone(this, static_cast<WorldStateZoneId>(newZone));
+        sWorldState->HandlePlayerLeaveZone(this, static_cast<AreaTableIDs>(m_zoneUpdateId));
+        sWorldState->HandlePlayerEnterZone(this, static_cast<AreaTableIDs>(newZone));
+    }
+    if (m_zoneUpdateId != newZone)
+    {
         sBattlefieldMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
         sBattlefieldMgr->HandlePlayerEnterZone(this, newZone);
         SendInitWorldStates(newZone,
@@ -1389,7 +1392,7 @@ void Player::UpdateEquipSpellsAtFormChange()
 
             ApplyEquipSpell(spellInfo, nullptr, false,
                             true); // remove spells that not fit to form
-            if (!sScriptMgr->CanApplyEquipSpellsItemSet(this, eff))
+            if (!sScriptMgr->OnPlayerCanApplyEquipSpellsItemSet(this, eff))
                 break;
             ApplyEquipSpell(spellInfo, nullptr, true,
                             true); // add spells that fit form but not active
@@ -1467,7 +1470,7 @@ void Player::UpdateFFAPvPState(bool reset /*= true*/)
     {
         if (!IsFFAPvP())
         {
-            sScriptMgr->OnFfaPvpStateUpdate(this, true);
+            sScriptMgr->OnPlayerFfaPvpStateUpdate(this, true);
             SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
             for (ControlSet::iterator itr = m_Controlled.begin();
                  itr != m_Controlled.end(); ++itr)
@@ -1489,7 +1492,7 @@ void Player::UpdateFFAPvPState(bool reset /*= true*/)
             if (HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP))
             {
                 RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
-                sScriptMgr->OnFfaPvpStateUpdate(this, false);
+                sScriptMgr->OnPlayerFfaPvpStateUpdate(this, false);
             }
             for (ControlSet::iterator itr = m_Controlled.begin();
                  itr != m_Controlled.end(); ++itr)
@@ -1686,6 +1689,8 @@ template <class T>
 void Player::UpdateVisibilityOf(T* target, UpdateData& data,
                                 std::vector<Unit*>& visibleNow)
 {
+    GetMap()->AddObjectToPendingUpdateList(target);
+
     if (HaveAtClient(target))
     {
         if (!CanSeeOrDetect(target, false, true))
